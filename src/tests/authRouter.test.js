@@ -1,5 +1,6 @@
 const request = require("supertest");
 const app = require("../service");
+const { json } = require("express");
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -8,7 +9,7 @@ if (process.env.VSCODE_INSPECTOR_OPTIONS) {
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
 
-beforeAll(async () => {
+beforeEach(async () => {
   testUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
   const registerRes = await request(app).post("/api/auth").send(testUser);
   testUserAuthToken = registerRes.body.token;
@@ -48,6 +49,18 @@ test("update user", async () => {
   expect(updateRes.status).toBe(200);
   expect(updateRes.body.name).toBe("常用名字");
   expect(updateRes.body.email).toBe("a@jwt.com");
+});
+
+test("logout", async () => {
+  const loginRes = await request(app).put("/api/auth").send(testUser);
+  const token = loginRes.body.token;
+
+  const logoutRes = await request(app)
+    .delete("/api/auth")
+    .set("Authorization", `Bearer ${token}`);
+  expect(logoutRes.status).toBe(200);
+  const resMessage = JSON.stringify(logoutRes.body.message);
+  expect(resMessage).toBe('"logout successful"');
 });
 
 function expectValidJwt(potentialJwt) {
