@@ -1,6 +1,10 @@
 const request = require("supertest");
 const app = require("../service");
 
+if (process.env.VSCODE_INSPECTOR_OPTIONS) {
+  jest.setTimeout(60 * 1000 * 5); // 5 minutes
+}
+
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
 
@@ -25,6 +29,25 @@ test("login", async () => {
   const expectedUser = { ...testUser, roles: [{ role: "diner" }] };
   delete expectedUser.password;
   expect(loginRes.body.user).toMatchObject(expectedUser);
+});
+
+test("update user", async () => {
+  const adminUser = {
+    name: "常用名字",
+    email: "a@jwt.com",
+    password: "admin",
+    roles: [{ role: "admin" }],
+  };
+  const loginRes = await request(app).put("/api/auth").send(adminUser);
+  const token = loginRes.body.token;
+
+  const updateRes = await request(app)
+    .put(`/api/auth/${loginRes.body.user.id}`)
+    .set("Authorization", `Bearer ${token}`)
+    .send(adminUser);
+  expect(updateRes.status).toBe(200);
+  expect(updateRes.body.name).toBe("常用名字");
+  expect(updateRes.body.email).toBe("a@jwt.com");
 });
 
 function expectValidJwt(potentialJwt) {
