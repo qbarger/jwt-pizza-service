@@ -17,7 +17,7 @@ describe("orderRouter tests", () => {
   beforeAll(async () => {
     const loginRes = await request(app).put("/api/auth").send(adminUser);
     adminUserAuthToken = loginRes.body.token;
-    //expectValidJwt(adminUserAuthToken);
+    expect(typeof adminUserAuthToken).toBe("string");
   });
 
   test("list menu", async () => {
@@ -26,7 +26,25 @@ describe("orderRouter tests", () => {
   });
 
   test("add menu item", async () => {
+    const random = getRandom();
     const res = await request(app)
+      .post("/api/franchise")
+      .set("Authorization", `Bearer ${adminUserAuthToken}`)
+      .send({
+        name: `pizzaPocket${random}`,
+        admins: [{ email: adminUser.email }],
+      });
+    expect(res.status).toBe(200);
+
+    const random2 = getRandom();
+    const franchiseId = res.body.id;
+    const storeRes = await request(app)
+      .post(`/api/franchise/${franchiseId}/store`)
+      .set("Authorization", `Bearer ${adminUserAuthToken}`)
+      .send({ name: `pizzaStore${random2}` });
+    expect(storeRes.status).toBe(200);
+
+    const res2 = await request(app)
       .put("/api/order/menu")
       .set("Authorization", `Bearer ${adminUserAuthToken}`)
       .send({
@@ -35,17 +53,13 @@ describe("orderRouter tests", () => {
         image: "pizza9.png",
         price: 0.0001,
       });
-    expect(res.status).toBe(200);
+    expect(res2.status).toBe(200);
   });
 
   test("create order", async () => {
-    const user = getDinerUser();
-    const loginRes = await request(app).put("/api/auth").send(user);
-    const token = loginRes.body.token;
-
     const res = await request(app)
       .post("/api/order")
-      .set("Authorization", `Bearer ${token}`)
+      .set("Authorization", `Bearer ${adminUserAuthToken}`)
       .send({
         franchiseId: 3,
         storeId: 8,
@@ -67,7 +81,7 @@ describe("orderRouter tests", () => {
     });
     */
 
-  function getDinerUser() {
-    return { name: "pizza diner", email: "w5ezrbaltf@test.com", password: "a" };
+  function getRandom() {
+    return Math.random().toString(36).substring(2, 12);
   }
 });
