@@ -105,9 +105,3 @@ test("list user's franchises", async () => {
 function getRandom() {
   return Math.random().toString(36).substring(2, 12);
 }
-
-async function registerAdmin() {
-  adminUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
-  const registerRes = await request(app).post("/api/auth").send(adminUser);
-  adminUserAuthToken = registerRes.body.token;
-}
