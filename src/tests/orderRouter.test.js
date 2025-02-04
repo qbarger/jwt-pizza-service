@@ -21,8 +21,8 @@ describe("orderRouter tests", () => {
   });
 
   test("list menu", async () => {
-    const res = await request(app).get("/api/order/menu");
-    expect(res.status).toBe(200);
+    const listres = await request(app).get("/api/order/menu");
+    expect(listres.status).toBe(200);
   });
 
   test("add menu item", async () => {
