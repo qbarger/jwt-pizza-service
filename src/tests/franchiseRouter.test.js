@@ -29,8 +29,11 @@ describe("franchiseRouter tests", () => {
     expect(typeof testUserAuthToken).toBe("string");
 
     const loginRes = await request(app).put("/api/auth").send(adminUser);
-    adminUserAuthToken = loginRes.body.token;
-    expect(typeof adminUserAuthToken).toBe("string");
+    if (loginRes.status !== 200) {
+      registerAdmin();
+    } else {
+      adminUserAuthToken = loginRes.body.token;
+    }
   });
 
   test("list franchises", async () => {
@@ -97,19 +100,6 @@ describe("franchiseRouter tests", () => {
     expect(deleteRes.status).toBe(200);
   });
 
-  /*
-  test("delete franchise no admin", async () => {
-    const dinerUser = getDinerUser();
-    const dinerLoginRes = await request(app).put("/api/auth").send(dinerUser);
-    const dinerToken = dinerLoginRes.body.token;
-
-    const deleteRes = await request(app)
-      .delete("/api/franchise/15")
-      .set("Authorization", `Bearer ${dinerToken}`);
-    expect(deleteRes.status).toBe(403);
-  });
-  */
-
   test("list user's franchises", async () => {
     const res = await request(app)
       .get(`/api/franchise/${adminUser.id}`)
@@ -119,5 +109,10 @@ describe("franchiseRouter tests", () => {
 
   function getRandom() {
     return Math.random().toString(36).substring(2, 12);
+  }
+
+  async function registerAdmin() {
+    const registerRes = await request(app).post("/api/auth").send(adminUser);
+    adminUserAuthToken = registerRes.body.token;
   }
 });

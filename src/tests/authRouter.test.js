@@ -31,7 +31,6 @@ describe("authRouter tests", () => {
     adminUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
     const registerRes2 = await request(app).post("/api/auth").send(adminUser);
     adminUserAuthToken = registerRes2.body.token;
-    //expect(typeof adminUserAuthToken).toBe("string");
   });
 
   test("register", async () => {
@@ -58,12 +57,6 @@ describe("authRouter tests", () => {
       .set("Authorization", `Bearer ${adminUserAuthToken}`)
       .send(adminUser);
     expect(updateRes.status).toBe(200);
-    /*
-    const expectedUser = { ...adminUser, roles: [{ role: "admin" }] };
-    expectedUser.id = loginRes.body.user.id;
-    delete expectedUser.password;
-    expect(updateRes.body.user).toMatchObject(expectedUser);
-    */
   });
 
   test("logout", async () => {

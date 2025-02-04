@@ -16,8 +16,11 @@ describe("orderRouter tests", () => {
 
   beforeAll(async () => {
     const loginRes = await request(app).put("/api/auth").send(adminUser);
-    adminUserAuthToken = loginRes.body.token;
-    //expect(typeof adminUserAuthToken).toBe("string");
+    if (loginRes.status !== 200) {
+      registerAdmin();
+    } else {
+      adminUserAuthToken = loginRes.body.token;
+    }
   });
 
   test("list menu", async () => {
@@ -68,20 +71,12 @@ describe("orderRouter tests", () => {
     expect(res.status).toBe(200);
   });
 
-  /*
-    test("list orders", async () => {
-    const user = getDinerUser();
-    const loginRes = await request(app).put("/api/auth").send(user);
-    const token = loginRes.body.token;
-
-    const res = await request(app)
-        .get("/api/order")
-        .set("Authorization", `Bearer ${token}`);
-    expect(res.status).toBe(200);
-    });
-    */
-
   function getRandom() {
     return Math.random().toString(36).substring(2, 12);
+  }
+
+  async function registerAdmin() {
+    const registerRes = await request(app).post("/api/auth").send(adminUser);
+    adminUserAuthToken = registerRes.body.token;
   }
 });
