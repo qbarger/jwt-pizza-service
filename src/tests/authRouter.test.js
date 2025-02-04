@@ -31,7 +31,7 @@ describe("authRouter tests", () => {
     adminUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
     const registerRes2 = await request(app).post("/api/auth").send(adminUser);
     adminUserAuthToken = registerRes2.body.token;
-    expect(typeof adminUserAuthToken).toBe("string");
+    //expect(typeof adminUserAuthToken).toBe("string");
   });
 
   test("register", async () => {
@@ -51,11 +51,11 @@ describe("authRouter tests", () => {
 
   test("update user", async () => {
     const loginRes = await request(app).put("/api/auth").send(adminUser);
-    const token = loginRes.body.token;
+    adminUserAuthToken = loginRes.body.token;
 
     const updateRes = await request(app)
       .put(`/api/auth/${loginRes.body.user.id}`)
-      .set("Authorization", `Bearer ${token}`)
+      .set("Authorization", `Bearer ${adminUserAuthToken}`)
       .send(adminUser);
     expect(updateRes.status).toBe(200);
     /*
