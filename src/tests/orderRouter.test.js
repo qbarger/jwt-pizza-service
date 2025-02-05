@@ -1,25 +1,30 @@
 const request = require("supertest");
 const app = require("../service");
+const DB = require("../database/database");
+const { Role } = require("../model/model");
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   jest.setTimeout(60 * 1000 * 5); // 5 minutes
 }
 
-const adminUser = {
-  name: "常用名字",
-  email: "a@jwt.com",
-  password: "admin",
-  roles: [{ role: "admin" }],
-};
+let adminUser;
 let adminUserAuthToken;
 
+async function createAdminUser() {
+  let user = { password: "toomanysecrets", roles: [{ role: Role.Admin }] };
+  user.name = "admin" + getRandom();
+  user.email = user.name + "@admin.com";
+
+  await DB.DB.addUser(user);
+  user.password = "toomanysecrets";
+
+  return user;
+}
+
 beforeAll(async () => {
+  adminUser = await createAdminUser();
   const loginRes = await request(app).put("/api/auth").send(adminUser);
-  if (loginRes.status !== 200) {
-    registerAdmin();
-  } else {
-    adminUserAuthToken = loginRes.body.token;
-  }
+  adminUserAuthToken = loginRes.body.token;
 });
 
 test("list menu", async () => {
@@ -77,6 +82,17 @@ test("create order", async () => {
     .send({ name: `pizzaStore${random2}` });
   expect(storeRes.status).toBe(200);
 
+  const res2 = await request(app)
+    .put("/api/order/menu")
+    .set("Authorization", `Bearer ${adminUserAuthToken}`)
+    .send({
+      title: "Veggie Pizza",
+      description: "Veggie",
+      image: "pizza9.png",
+      price: 0.05,
+    });
+  expect(res2.status).toBe(200);
+
   const res3 = await request(app)
     .post("/api/order")
     .set("Authorization", `Bearer ${adminUserAuthToken}`)
@@ -90,9 +106,4 @@ test("create order", async () => {
 
 function getRandom() {
   return Math.random().toString(36).substring(2, 12);
-}
-
-async function registerAdmin() {
-  const registerRes = await request(app).post("/api/auth").send(adminUser);
-  adminUserAuthToken = registerRes.body.token;
 }

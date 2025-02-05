@@ -1,5 +1,7 @@
 const request = require("supertest");
 const app = require("../service");
+const DB = require("../database/database");
+const { Role } = require("../model/model");
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -12,14 +14,19 @@ const testUser = {
 };
 let testUserAuthToken;
 
-const adminUser = {
-  id: 1,
-  name: "常用名字",
-  email: "a@jwt.com",
-  password: "admin",
-  roles: [{ role: "admin" }],
-};
+let adminUser;
 let adminUserAuthToken;
+
+async function createAdminUser() {
+  let user = { password: "toomanysecrets", roles: [{ role: Role.Admin }] };
+  user.name = "admin" + getRandom();
+  user.email = user.name + "@admin.com";
+
+  await DB.DB.addUser(user);
+  user.password = "toomanysecrets";
+
+  return user;
+}
 
 beforeAll(async () => {
   testUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
@@ -27,6 +34,7 @@ beforeAll(async () => {
   testUserAuthToken = registerRes.body.token;
   expect(typeof testUserAuthToken).toBe("string");
 
+  adminUser = await createAdminUser();
   const loginRes = await request(app).put("/api/auth").send(adminUser);
   adminUserAuthToken = loginRes.body.token;
 });
