@@ -91,11 +91,6 @@ function trackPizzas() {
   };
 }
 
-function trackLatency() {
-  return (req, res, next) => {
-    next();
-  };
-}
 // This will periodically send metrics to Grafana
 setInterval(() => {
   console.log("Interval for HTTP requests is running");
