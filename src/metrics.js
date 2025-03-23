@@ -98,14 +98,11 @@ setInterval(() => {
 
   Object.keys(requests).forEach((key) => {
     console.log(`Requests for ${key}: ${requests[key]}`);
-    // Save current requests count
     if (!history[key]) history[key] = [];
     history[key].push({ time: timestamp, count: requests[key] });
 
-    // Keep only last 6 entries (each representing 10 sec → 60 sec window)
     history[key] = history[key].slice(-6);
 
-    // Calculate rolling total (sum of last 60 sec)
     const rollingTotal = history[key].reduce(
       (sum, entry) => sum + entry.count,
       0
@@ -113,7 +110,6 @@ setInterval(() => {
 
     console.log(`Rolling total for ${key}: ${rollingTotal}`);
 
-    // Send metric with rolling total
     sendMetricToGrafana(
       "http_requests_per_min",
       rollingTotal,
@@ -124,7 +120,6 @@ setInterval(() => {
     );
   });
 
-  // Reset current interval count
   Object.keys(requests).forEach((key) => {
     requests[key] = 0;
   });
