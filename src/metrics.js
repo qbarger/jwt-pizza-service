@@ -165,7 +165,7 @@ setInterval(() => {
 }, 60000);
 
 function sendMetricToGrafana(metricName, metricValue, attributes, unit = "1") {
-  attributes = { ...attributes, source: config.grafana.source };
+  attributes = { ...attributes, source: config.metrics.source };
 
   const metric = {
     resourceMetrics: [
@@ -204,13 +204,13 @@ function sendMetricToGrafana(metricName, metricValue, attributes, unit = "1") {
     );
   });
 
-  console.log(`Pushing ${metricName} to Grafana url: ${config.grafana.url}`);
+  console.log(`Pushing ${metricName} to Grafana url: ${config.metrics.url}`);
 
-  fetch(`${config.grafana.url}`, {
+  fetch(`${config.metrics.url}`, {
     method: "POST",
     body: JSON.stringify(metric),
     headers: {
-      Authorization: `Bearer ${config.grafana.apiKey}`,
+      Authorization: `Bearer ${config.metrics.apiKey}`,
       "Content-Type": "application/json",
     },
   })
