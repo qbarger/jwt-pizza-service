@@ -116,6 +116,7 @@ orderRouter.get(
 orderRouter.post(
   "/",
   metrics.track("post"),
+  metrics.trackPizzas(),
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
