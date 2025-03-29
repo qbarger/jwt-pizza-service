@@ -4,15 +4,27 @@ const orderRouter = require("./routes/orderRouter.js");
 const franchiseRouter = require("./routes/franchiseRouter.js");
 const version = require("./version.json");
 const config = require("./config.js");
+const logger = require("./logger.js");
 
 const app = express();
 app.use(express.json());
+app.use(logger.httpLogger);
 app.use(setAuthUser);
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+app.use((req, res, next) => {
+  logger.log("info", "request", {
+    method: req.method,
+    url: req.originalUrl,
+    headers: req.headers,
+    body: sanitizeBody(req.body),
+  });
   next();
 });
 
@@ -57,5 +69,16 @@ app.use((err, req, res, next) => {
     .json({ message: err.message, stack: err.stack });
   next();
 });
+
+function sanitizeBody(body) {
+  if (!body || typeof body !== "object") return body;
+  const sanitized = { ...body };
+
+  // Remove sensitive fields
+  if (sanitized.password) sanitized.password = "*****";
+  if (sanitized.token) sanitized.token = "*****";
+
+  return sanitized;
+}
 
 module.exports = app;
