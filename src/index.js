@@ -1,5 +1,6 @@
 const app = require("./service.js");
 const logger = require("./logger.js");
+const metrics = require("./metrics.js");
 
 process.on("uncaughtException", (err) => {
   logger.log("error", "uncaught_exception", {
