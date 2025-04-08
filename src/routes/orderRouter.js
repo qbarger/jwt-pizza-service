@@ -112,6 +112,7 @@ orderRouter.get(
   })
 );
 
+/*
 //Chaos testing endpoint
 let enableChaos = false;
 orderRouter.put(
@@ -132,6 +133,7 @@ orderRouter.post("/", (req, res, next) => {
   }
   next();
 });
+*/
 
 // createOrder
 orderRouter.post(
